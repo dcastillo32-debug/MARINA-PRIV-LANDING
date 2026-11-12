@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Marina Privé Live</title>
+<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Manrope:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Marina Privé Live: real visits to marinaprive.com on a globe with country borders.
+   Layout: full-screen globe; glass column on the right; ticker at the foot. */
+:root {
+  --night: #040b16; --glass: rgba(10, 26, 46, 0.62); --line: rgba(222, 192, 82, 0.18);
+  --gold: #dec052; --gold-soft: #f0dc95; --ink: #eef2f7; --mute: #8ea0b8; --dim: #55688a;
+  --sea: #43b8cc; --ok: #4fd1a5; --err: #ff8a8a;
+  --f-display: "Syncopate", "Arial Narrow", Arial, sans-serif;
+  --f-body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--night); color: var(--ink); font-family: var(--f-body); overflow: hidden; }
+#globe { position: fixed; inset: 0; cursor: grab; }
+#globe:active { cursor: grabbing; }
+
+.top { position: fixed; top: 0; left: 0; right: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: calc(env(safe-area-inset-top, 0px) + 20px) max(28px, env(safe-area-inset-right, 0px)) 12px max(28px, env(safe-area-inset-left, 0px)); pointer-events: none; }
+.brand { display: flex; align-items: baseline; gap: 14px; }
+.brand b { font-family: var(--f-display); font-weight: 700; letter-spacing: .32em; font-size: 15px; }
+.brand span { font-family: var(--f-display); font-size: 11px; letter-spacing: .4em; color: var(--gold); }
+.status { display: inline-flex; align-items: center; gap: 8px; font-family: var(--f-mono); font-size: 11px; letter-spacing: .1em; color: var(--mute); text-transform: uppercase; }
+.status i { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); animation: ping 2s infinite; }
+.status.off i { background: var(--err); animation: none; }
+@keyframes ping { 0% { box-shadow: 0 0 0 0 rgba(79,209,165,.55);} 80%,100% { box-shadow: 0 0 0 10px rgba(79,209,165,0);} }
+.toplinks { pointer-events: auto; display: flex; gap: 10px; }
+.chip { font: 500 10.5px var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--mute); background: rgba(4,11,22,.6);
+  border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; cursor: pointer; }
+.chip:hover, .chip:focus-visible { color: var(--gold); outline: none; border-color: var(--gold); }
+
+.controls { position: fixed; z-index: 6; left: max(28px, env(safe-area-inset-left, 0px)); top: calc(env(safe-area-inset-top, 0px) + 62px); display: flex; flex-wrap: wrap; gap: 10px; }
+.seg { display: inline-flex; gap: 3px; padding: 4px; border: 1px solid var(--line); border-radius: 999px; background: rgba(4,11,22,.6); backdrop-filter: blur(10px); }
+.seg button { font: 500 10.5px var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--mute); background: none; border: 0; padding: 8px 13px; border-radius: 999px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--gold); color: var(--night); }
+.seg button:focus-visible { outline: 2px solid var(--gold-soft); outline-offset: 2px; }
+
+.hero { position: fixed; left: max(28px, env(safe-area-inset-left, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 84px); z-index: 4; pointer-events: none; max-width: 540px; }
+.hero .k { font-family: var(--f-mono); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--mute); }
+.hero .big { font-family: var(--f-display); font-weight: 700; font-size: clamp(56px, 9vw, 116px); line-height: .95; margin: 6px 0 4px;
+  background: linear-gradient(180deg, var(--gold-soft), var(--gold)); -webkit-background-clip: text; background-clip: text; color: transparent; font-variant-numeric: tabular-nums; }
+.hero .sub { color: var(--mute); font-size: 14px; }
+.hero .sub b { color: var(--ink); font-weight: 600; }
+
+.panel { position: fixed; z-index: 5; top: calc(env(safe-area-inset-top, 0px) + 70px); right: max(24px, env(safe-area-inset-right, 0px)); bottom: calc(env(safe-area-inset-bottom, 0px) + 66px);
+  width: 350px; display: flex; flex-direction: column; gap: 12px; }
+.card { background: var(--glass); border: 1px solid var(--line); border-radius: 18px; padding: 15px 18px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.card h3 { margin: 0 0 11px; font: 500 10.5px var(--f-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--mute); display: flex; justify-content: space-between; gap: 8px; }
+.card h3 em { font-style: normal; color: var(--gold); }
+.fstep { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: baseline; margin-bottom: 9px; }
+.fstep span { font-size: 13px; color: var(--mute); }
+.fstep b { font: 500 15px var(--f-mono); font-variant-numeric: tabular-nums; }
+.bar { grid-column: 1 / -1; height: 4px; border-radius: 4px; background: rgba(255,255,255,.06); overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--gold), var(--gold-soft)); transition: width .8s ease; }
+.who { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.who span { font-size: 11.5px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--gold-soft); }
+.who span.f { border-color: var(--ok); color: var(--ok); }
+.crow { display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 10px; font-size: 13px; padding: 3px 0; }
+.crow .cc { font: 10px var(--f-mono); color: var(--gold); border: 1px solid var(--line); border-radius: 6px; text-align: center; padding: 2px 0; }
+.crow .n { font-family: var(--f-mono); color: var(--mute); font-variant-numeric: tabular-nums; }
+.feed { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.feed ul { list-style: none; margin: 0; padding: 0; overflow: auto; }
+.feed li { display: grid; grid-template-columns: 8px 1fr auto; gap: 10px; align-items: start; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.05); }
+.feed li.new { animation: slide .6s ease both; }
+.feed li .dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; background: var(--sea); }
+.feed li.partner .dot { background: var(--gold); box-shadow: 0 0 10px var(--gold); }
+.feed li.form .dot { background: var(--ok); box-shadow: 0 0 10px var(--ok); }
+.feed li p { margin: 0; font-size: 13px; line-height: 1.35; min-width: 0; overflow-wrap: anywhere; }
+.feed li p small { display: block; color: var(--dim); font-size: 11.5px; margin-top: 2px; }
+.feed li time { font: 10.5px var(--f-mono); color: var(--dim); white-space: nowrap; }
+.empty { color: var(--dim); font-size: 13px; padding: 6px 0; }
+@keyframes slide { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+
+.ticker { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: flex; gap: 26px; align-items: center; overflow: hidden;
+  padding: 13px max(28px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 13px) max(28px, env(safe-area-inset-left, 0px));
+  border-top: 1px solid var(--line); background: linear-gradient(0deg, rgba(4,11,22,.95), rgba(4,11,22,.6)); font: 11px var(--f-mono); color: var(--mute); white-space: nowrap; }
+.ticker b { color: var(--ink); font-weight: 500; }
+.legend { display: flex; gap: 18px; margin-left: auto; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+
+.tip { position: fixed; z-index: 9; pointer-events: none; background: rgba(4,11,22,.92); border: 1px solid var(--line); border-radius: 10px; padding: 8px 11px; font-size: 12.5px; }
+
+/* Sign-in */
+.login { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: radial-gradient(ellipse at 50% 40%, #0d2137, var(--night) 70%);
+  padding: 24px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px)); }
+.login form { width: 100%; max-width: 360px; display: grid; gap: 14px; }
+.login h1 { font: 700 18px var(--f-display); letter-spacing: .32em; margin: 0; text-align: center; }
+.login h1 span { display: block; color: var(--gold); font-size: 11px; letter-spacing: .5em; margin-top: 8px; font-weight: 400; }
+.login p { color: var(--mute); font-size: 13px; text-align: center; margin: 4px 0 8px; }
+.login label { display: grid; gap: 6px; font: 500 10.5px var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--mute); }
+.login input { font: 15px var(--f-body); color: var(--ink); background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12); border-radius: 12px; padding: 13px 14px; }
+.login input:focus { outline: none; border-color: var(--gold); }
+.login button { font: 600 14px var(--f-body); background: var(--gold); color: var(--night); border: 0; border-radius: 12px; padding: 14px; cursor: pointer; margin-top: 4px; }
+.login button:disabled { opacity: .6; }
+.login .err { color: var(--err); font-size: 13px; text-align: center; min-height: 18px; margin: 0; }
+
+@media (max-width: 900px) {
+  body { overflow: auto; }
+  #globe { position: relative; height: 68vh; }
+  .panel { position: relative; top: auto; right: auto; bottom: auto; width: auto; margin: 0 0 80px; padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
+  .feed ul { max-height: 360px; }
+  .hero { position: relative; left: auto; bottom: auto; padding: 0 16px 16px; }
+  .hero .big { font-size: 56px; }
+  .top { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .controls { left: max(16px, env(safe-area-inset-left, 0px)); }
+  .legend { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .status i, .feed li.new { animation: none; } }
+</style>
+</head>
+<body>
+
+<div class="login" id="login" hidden>
+  <form id="login-form" autocomplete="on">
+    <h1>MARINA PRIVÉ<span>LIVE</span></h1>
+    <p>Entra con tu cuenta de administrador de Marina Privé.</p>
+    <label for="l-email">Email<input id="l-email" type="email" autocomplete="username" required></label>
+    <label for="l-pass">Contraseña<input id="l-pass" type="password" autocomplete="current-password" required></label>
+    <button id="l-btn" type="submit">Entrar</button>
+    <p class="err" id="l-err" role="alert"></p>
+  </form>
+</div>
+
+<div id="globe" aria-label="Globo con las visitas a marinaprive.com"></div>
+<div class="tip" id="tip" hidden></div>
+
+<header class="top">
+  <div class="brand"><b>MARINA PRIVÉ</b><span>LIVE</span></div>
+  <div style="display:flex;gap:14px;align-items:center">
+    <span class="status" id="status"><i></i><span id="clock">Dubái · --:--</span></span>
+    <span class="toplinks"><button class="chip" type="button" id="fs">Pantalla completa</button><button class="chip" type="button" id="logout">Salir</button></span>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="seg" role="group" aria-label="Periodo">
+    <button type="button" data-range="1" aria-pressed="false">Hoy</button>
+    <button type="button" data-range="7" aria-pressed="true">7 días</button>
+    <button type="button" data-range="30" aria-pressed="false">30 días</button>
+    <button type="button" data-range="0" aria-pressed="false">Todo</button>
+  </div>
+  <div class="seg" role="group" aria-label="Qué mostrar">
+    <button type="button" data-mode="all" aria-pressed="true">Toda la web</button>
+    <button type="button" data-mode="partners" aria-pressed="false">Emails a partners</button>
+  </div>
+</div>
+
+<section class="hero" aria-live="polite">
+  <div class="k" id="hero-k">Visitas · últimos 7 días</div>
+  <div class="big" id="total">0</div>
+  <div class="sub"><b id="countries">0</b> países · <b id="cities">0</b> ciudades · <b id="forms">0</b> solicitudes de partner</div>
+</section>
+
+<aside class="panel">
+  <div class="card">
+    <h3>Captación de partners <em>emails con enlace propio</em></h3>
+    <div class="fstep"><span>Emails con enlace propio</span><b id="f1">0</b><div class="bar"><i style="width:100%"></i></div></div>
+    <div class="fstep"><span>Han abierto la web</span><b id="f2">0</b><div class="bar"><i id="b2" style="width:0%"></i></div></div>
+    <div class="fstep"><span>Han enviado el formulario</span><b id="f3">0</b><div class="bar"><i id="b3" style="width:0%"></i></div></div>
+    <div class="who" id="who"></div>
+  </div>
+  <div class="card">
+    <h3>Países <em>más visitas</em></h3>
+    <div id="top"></div>
+  </div>
+  <div class="card feed">
+    <h3>Últimas visitas <em id="feedcount"></em></h3>
+    <ul id="feed"></ul>
+  </div>
+</aside>
+
+<footer class="ticker">
+  <span>Última visita: <b id="last">—</b></span>
+  <span>Actualizado: <b id="upd">—</b></span>
+  <span class="legend">
+    <span><i style="background:var(--sea)"></i>Visita</span>
+    <span><i style="background:var(--gold)"></i>Desde email a partner</span>
+    <span><i style="background:var(--ok)"></i>Solicitud enviada</span>
+  </span>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/globe.gl@2.44.1/dist/globe.gl.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@amcharts/amcharts4-geodata@4.1.28/dist/script/worldLow.js"></script>
+<script>
+(function () {
+  const SUPABASE_URL = "https://xcdtkztkkdhmkcrfjpil.supabase.co";
+  const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjZHRrenRra2RobWtjcmZqcGlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3NTMxODIsImV4cCI6MjEwODMyOTE4Mn0.teKVbyQYo9FSk4V2BN3591qLk0B-dWLoD0JS7nHGEgA";
+  const HQ = { lat: 25.08, lng: 55.14 }; // Dubai Marina
+  // Personal links sent in partner emails: marinaprive.com/p/<slug>.
+  const PARTNERS = {
+    "butinah": "Butinah Charters", "the-queen": "The Queen Yachts", "dubai-yachting": "Dubai Yachting Company", "gulf-yachts": "Gulf Yachts Dubai",
+    "royal-star": "Royal Star Yachts", "uae-watersports": "UAE Watersports", "nanje": "Nanje Yachts", "xclusive": "Xclusive Yachts",
+    "luxury-sea-boats": "Luxury Sea Boats", "royal-yachts": "Royal Yachts", "aquarius": "Aquarius Yachts", "xtreme": "Xtreme Yacht",
+    "sky-marine": "Sky Marine Yachts", "maxoel": "Maxoel Yachts", "mnh": "MNH Yachts", "evali": "Evali Yachts"
+  };
+  const COUNTRY_ES = (() => { try { return new Intl.DisplayNames(["es"], { type: "region" }); } catch (e) { return null; } })();
+  const cname = (cc, fallback) => { try { return (cc && COUNTRY_ES && COUNTRY_ES.of(cc)) || fallback || cc || "Desconocido"; } catch (e) { return fallback || cc; } };
+  const el = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const ago = (t) => { const m = Math.round((Date.now() - t) / 60000); if (m < 1) return "ahora"; if (m < 60) return m + " min"; const h = Math.round(m / 60); return h < 24 ? h + " h" : Math.round(h / 24) + " d"; };
+  const source = (v) => {
+    if (v.ref && PARTNERS[v.ref]) return "Email a partner · " + PARTNERS[v.ref];
+    if (v.ref) return "Enlace /p/" + v.ref;
+    const r = (v.referrer || "").toLowerCase();
+    if (!r) return "Enlace directo o email";
+    if (r.includes("google")) return "Desde Google";
+    if (r.includes("instagram")) return "Desde Instagram";
+    if (r.includes("linkedin")) return "Desde LinkedIn";
+    if (r.includes("facebook")) return "Desde Facebook";
+    try { return "Desde " + new URL(v.referrer).hostname.replace(/^www\./, ""); } catch (e) { return "Desde otra web"; }
+  };
+
+  const sb = window.supabase.createClient(SUPABASE_URL, ANON_KEY, { auth: { persistSession: true, storageKey: "mp-live-auth" } });
+  let visits = [], range = 7, mode = "all", seen = new Set(), first = true, hovered = null;
+
+  // ---------- Globe ----------
+  const land = ((window.am4geodata_worldLow && window.am4geodata_worldLow.features) || []).filter((f) => f.id !== "AQ");
+  const host = el("globe");
+  let globe = null, idleTimer = null;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  try {
+    globe = Globe({ animateIn: true })(host)
+      .backgroundColor("rgba(0,0,0,0)")
+      .showGraticules(true)
+      .showAtmosphere(true).atmosphereColor("#4a8fd6").atmosphereAltitude(0.16)
+      .polygonsData(land)
+      .polygonAltitude((d) => (d === hovered ? 0.018 : 0.006))
+      .polygonCapColor((d) => capColor(d))
+      .polygonSideColor(() => "rgba(222,192,82,0.06)")
+      .polygonStrokeColor(() => "rgba(222,192,82,0.55)")
+      .polygonsTransitionDuration(300)
+      .onPolygonHover((d) => { hovered = d; globe.polygonAltitude(globe.polygonAltitude()); host.style.cursor = d ? "pointer" : "grab"; showTip(d); })
+      .pointAltitude((d) => 0.012 + Math.min(0.22, d.n * 0.015)).pointRadius((d) => 0.22 + Math.min(0.55, d.n * 0.04))
+      .pointColor((d) => (d.form ? "#4fd1a5" : d.partner ? "#dec052" : "#43b8cc"))
+      .pointLabel((d) => `<b>${esc(d.city)}</b><br>${d.n} visita${d.n === 1 ? "" : "s"}`)
+      .arcColor((d) => (d.form ? ["rgba(79,209,165,0.05)", "#4fd1a5"] : d.partner ? ["rgba(222,192,82,0.05)", "#dec052"] : ["rgba(67,184,204,0.04)", "rgba(67,184,204,0.9)"]))
+      .arcStroke(0.4).arcDashLength(0.5).arcDashGap(1.2).arcDashAnimateTime(2800).arcAltitudeAutoScale(0.4)
+      .ringColor(() => (t) => `rgba(222,192,82,${1 - t})`).ringMaxRadius(5).ringPropagationSpeed(2.4).ringRepeatPeriod(800);
+    const mat = globe.globeMaterial();
+    if (mat.color) mat.color.set("#071a33"); if (mat.emissive) mat.emissive.set("#04122a"); if ("emissiveIntensity" in mat) mat.emissiveIntensity = 0.55; if ("shininess" in mat) mat.shininess = 0.1;
+    globe.pointOfView({ lat: 28, lng: 40, altitude: 2.2 }, 0);
+    // Turns by itself; drag to turn it yourself (it stops while you move it and starts again after 8 s).
+    const ctl = globe.controls();
+    ctl.autoRotate = !reduce; ctl.autoRotateSpeed = 0.35; ctl.enableZoom = true; ctl.enableDamping = true; ctl.dampingFactor = 0.08; ctl.rotateSpeed = 0.6;
+    ctl.minDistance = 130; ctl.maxDistance = 600;
+    ctl.addEventListener("start", () => { ctl.autoRotate = false; clearTimeout(idleTimer); });
+    ctl.addEventListener("end", () => { clearTimeout(idleTimer); if (!reduce) idleTimer = setTimeout(() => (ctl.autoRotate = true), 8000); });
+    const size = () => { const narrow = innerWidth <= 900; globe.width(innerWidth).height(narrow ? innerHeight * 0.68 : innerHeight); };
+    size(); addEventListener("resize", size);
+  } catch (e) { host.innerHTML = '<p style="padding:140px 28px;color:#8ea0b8">El globo no se ha podido cargar en este navegador.</p>'; }
+
+  let byCountry = {};
+  function capColor(d) {
+    const n = byCountry[d.id] || 0;
+    if (d === hovered) return "rgba(222,192,82,0.55)";
+    if (!n) return "rgba(14,38,66,0.92)";
+    const max = Math.max(1, ...Object.values(byCountry));
+    const a = 0.18 + 0.5 * Math.sqrt(n / max);
+    return `rgba(222,192,82,${a.toFixed(2)})`;
+  }
+  const tip = el("tip");
+  let mouse = { x: 0, y: 0 };
+  addEventListener("mousemove", (e) => { mouse = { x: e.clientX, y: e.clientY }; if (!tip.hidden) place(); });
+  function place() { tip.style.left = mouse.x + 14 + "px"; tip.style.top = mouse.y + 14 + "px"; }
+  function showTip(d) {
+    if (!d) { tip.hidden = true; return; }
+    const n = byCountry[d.id] || 0;
+    tip.innerHTML = `<b>${esc(cname(d.id, d.properties && d.properties.name))}</b><br><span style="color:#8ea0b8">${n ? n + " visita" + (n === 1 ? "" : "s") : "Sin visitas"}</span>`;
+    tip.hidden = false; place();
+  }
+
+  // ---------- Data ----------
+  const inRange = () => { if (!range) return visits; const from = range === 1 ? new Date(new Date().setHours(0, 0, 0, 0)).getTime() : Date.now() - range * 864e5; return visits.filter((v) => v.t >= from); };
+  const shown = () => { const l = inRange(); return mode === "partners" ? l.filter((v) => v.ref && PARTNERS[v.ref]) : l; };
+
+  function render(newOnes) {
+    const list = shown();
+    const views = list.filter((v) => v.event === "view");
+    byCountry = {}; views.forEach((v) => { if (v.country) byCountry[v.country] = (byCountry[v.country] || 0) + 1; });
+    const cities = {};
+    list.forEach((v) => {
+      if (v.lat == null || v.lon == null) return;
+      const k = (v.city || "?") + "|" + v.country;
+      const c = (cities[k] = cities[k] || { city: v.city || cname(v.country, v.country_name), lat: v.lat, lng: v.lon, n: 0, partner: false, form: false });
+      if (v.event === "view") c.n++; if (v.ref && PARTNERS[v.ref]) c.partner = true; if (v.event === "form") c.form = true;
+    });
+    if (globe) {
+      globe.polygonCapColor(globe.polygonCapColor());
+      globe.pointsData(Object.values(cities).filter((c) => c.n || c.form));
+      globe.arcsData(list.filter((v) => v.lat != null).slice(0, 30).map((v) => ({ startLat: v.lat, startLng: v.lon, endLat: HQ.lat, endLng: HQ.lng, partner: !!(v.ref && PARTNERS[v.ref]), form: v.event === "form" })));
+      if (newOnes && newOnes.length) globe.ringsData(newOnes.filter((v) => v.lat != null).map((v) => ({ lat: v.lat, lng: v.lon })));
+    }
+    const labels = { 1: "hoy", 7: "últimos 7 días", 30: "últimos 30 días", 0: "desde el principio" };
+    el("hero-k").textContent = (mode === "partners" ? "Visitas desde emails a partners · " : "Visitas · ") + labels[range];
+    el("total").textContent = views.length.toLocaleString("es-ES");
+    el("countries").textContent = Object.keys(byCountry).length;
+    el("cities").textContent = Object.keys(cities).length;
+    el("forms").textContent = list.filter((v) => v.event === "form").length;
+
+    const top = Object.entries(byCountry).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    el("top").innerHTML = top.length ? top.map(([cc, n]) => `<div class="crow"><span class="cc">${esc(cc)}</span><span>${esc(cname(cc))}</span><span class="n">${n}</span></div>`).join("") : '<div class="empty">Aún no hay visitas en este periodo.</div>';
+
+    const all = visits; // funnel always over everything
+    const opened = new Set(all.filter((v) => v.ref && PARTNERS[v.ref]).map((v) => v.ref));
+    const formed = new Set(all.filter((v) => v.ref && PARTNERS[v.ref] && v.event === "form").map((v) => v.ref));
+    const total = Object.keys(PARTNERS).length;
+    el("f1").textContent = total; el("f2").textContent = opened.size; el("f3").textContent = formed.size;
+    el("b2").style.width = Math.round((opened.size / total) * 100) + "%"; el("b3").style.width = Math.round((formed.size / total) * 100) + "%";
+    el("who").innerHTML = [...opened].map((r) => `<span class="${formed.has(r) ? "f" : ""}">${esc(PARTNERS[r])}</span>`).join("");
+
+    const fresh = new Set((newOnes || []).map((v) => v.id));
+    el("feed").innerHTML = list.slice(0, 40).map((v) => {
+      const cls = [v.event === "form" ? "form" : v.ref && PARTNERS[v.ref] ? "partner" : "", fresh.has(v.id) ? "new" : ""].join(" ");
+      const place = [v.city, cname(v.country, v.country_name)].filter(Boolean).join(", ") || "Lugar desconocido";
+      const what = v.event === "form" ? "Ha enviado la solicitud de partner" : source(v) + (v.device === "mobile" ? " · móvil" : " · ordenador");
+      return `<li class="${cls}"><span class="dot"></span><p>${esc(place)}<small>${esc(what)}</small></p><time>${ago(v.t)}</time></li>`;
+    }).join("") || '<li class="empty">Aún no hay visitas en este periodo.</li>';
+    const last = visits[0]; el("last").textContent = last ? `${[last.city, cname(last.country, last.country_name)].filter(Boolean).join(", ")} · ${ago(last.t)}` : "—";
+  }
+
+  async function load() {
+    const { data, error } = await sb.from("SiteVisit").select("id,created_at,event,path,ref,referrer,device,country,country_name,city,lat,lon").order("id", { ascending: false }).limit(5000);
+    if (error) { el("status").classList.add("off"); el("upd").textContent = "sin conexión"; if (/JWT|auth|permission|401|403/i.test(error.message)) showLogin(); return; }
+    el("status").classList.remove("off");
+    const rows = (data || []).map((r) => ({ ...r, t: new Date(r.created_at).getTime() }));
+    const newOnes = first ? [] : rows.filter((r) => !seen.has(r.id));
+    rows.forEach((r) => seen.add(r.id));
+    visits = rows; first = false;
+    el("upd").textContent = new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    render(newOnes);
+  }
+
+  // ---------- Controls ----------
+  document.querySelectorAll("[data-range]").forEach((b) => b.addEventListener("click", () => {
+    range = Number(b.dataset.range); document.querySelectorAll("[data-range]").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); render();
+  }));
+  document.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => {
+    mode = b.dataset.mode; document.querySelectorAll("[data-mode]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    if (globe) globe.pointOfView(mode === "partners" ? { lat: 25, lng: 55, altitude: 0.85 } : { lat: 28, lng: 40, altitude: 2.2 }, 1600);
+    render();
+  }));
+  el("fs").addEventListener("click", () => { try { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); } catch (e) {} });
+  el("logout").addEventListener("click", async () => { await sb.auth.signOut(); showLogin(); });
+
+  // ---------- Sign-in ----------
+  function showLogin() { el("login").hidden = false; setTimeout(() => el("l-email").focus(), 50); }
+  el("login-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    el("l-err").textContent = ""; el("l-btn").disabled = true; el("l-btn").textContent = "Entrando…";
+    const { data, error } = await sb.auth.signInWithPassword({ email: el("l-email").value.trim(), password: el("l-pass").value });
+    el("l-btn").disabled = false; el("l-btn").textContent = "Entrar";
+    if (error) { el("l-err").textContent = "Email o contraseña incorrectos."; return; }
+    const role = data.user && data.user.app_metadata && data.user.app_metadata.role;
+    if (!["admin", "team"].includes(role)) { el("l-err").textContent = "Esta cuenta no tiene acceso al panel de Marina Privé."; await sb.auth.signOut(); return; }
+    el("login").hidden = true; el("l-pass").value = ""; start();
+  });
+
+  let timer = null;
+  function start() { load(); clearInterval(timer); timer = setInterval(load, 20000); }
+  const tick = () => { try { el("clock").textContent = "Dubái · " + new Date().toLocaleTimeString("es-ES", { timeZone: "Asia/Dubai", hour: "2-digit", minute: "2-digit" }); } catch (e) {} };
+  tick(); setInterval(tick, 15000);
+
+  sb.auth.getSession().then(({ data }) => { if (data && data.session) start(); else showLogin(); });
+})();
+</script>
+</body>
+</html>
