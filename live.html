@@ -30,9 +30,10 @@ body { background: var(--night); color: var(--ink); font-family: var(--f-body); 
 
 .top { position: fixed; top: 0; left: 0; right: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: calc(env(safe-area-inset-top, 0px) + 20px) max(28px, env(safe-area-inset-right, 0px)) 12px max(28px, env(safe-area-inset-left, 0px)); pointer-events: none; }
-.brand { display: flex; align-items: baseline; gap: 14px; }
-.brand b { font-family: var(--f-display); font-weight: 700; letter-spacing: .32em; font-size: 15px; }
-.brand span { font-family: var(--f-display); font-size: 11px; letter-spacing: .4em; color: var(--gold); }
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand img { height: 30px; width: auto; display: block; }
+.brand .sep { width: 1px; height: 22px; background: var(--gold); opacity: .7; }
+.brand span { font-family: var(--f-display); font-weight: 700; font-size: 13px; letter-spacing: .38em; color: var(--gold); }
 .status { display: inline-flex; align-items: center; gap: 8px; font-family: var(--f-mono); font-size: 11px; letter-spacing: .1em; color: var(--mute); text-transform: uppercase; }
 .status i { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); animation: ping 2s infinite; }
 .status.off i { background: var(--err); animation: none; }
@@ -98,8 +99,12 @@ body { background: var(--night); color: var(--ink); font-family: var(--f-body); 
 .login { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: radial-gradient(ellipse at 50% 40%, #0d2137, var(--night) 70%);
   padding: 24px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px)); }
 .login form { width: 100%; max-width: 360px; display: grid; gap: 14px; }
-.login h1 { font: 700 18px var(--f-display); letter-spacing: .32em; margin: 0; text-align: center; }
-.login h1 span { display: block; color: var(--gold); font-size: 11px; letter-spacing: .5em; margin-top: 8px; font-weight: 400; }
+.login h1 { margin: 0; display: grid; justify-items: center; gap: 12px; }
+.login h1 img { height: 40px; width: auto; }
+.login h1 span { color: var(--gold); font: 700 12px var(--f-display); letter-spacing: .5em; }
+.login .link { background: none; color: var(--mute); font: 500 12.5px var(--f-body); padding: 4px; margin: 0; text-decoration: underline; text-underline-offset: 3px; }
+.login .link:hover { color: var(--gold); }
+.login .ok { color: var(--ok); font-size: 13px; text-align: center; margin: 0; }
 .login p { color: var(--mute); font-size: 13px; text-align: center; margin: 4px 0 8px; }
 .login label { display: grid; gap: 6px; font: 500 10.5px var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--mute); }
 .login input { font: 15px var(--f-body); color: var(--ink); background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12); border-radius: 12px; padding: 13px 14px; }
@@ -126,12 +131,15 @@ body { background: var(--night); color: var(--ink); font-family: var(--f-body); 
 
 <div class="login" id="login" hidden>
   <form id="login-form" autocomplete="on">
-    <h1>MARINA PRIVÉ<span>LIVE</span></h1>
+    <h1><img src="/assets/logo-marina-prive.png" alt="Marina Privé" height="40"><span>LIVE</span></h1>
     <p>Entra con tu cuenta de administrador de Marina Privé.</p>
     <label for="l-email">Email<input id="l-email" type="email" autocomplete="username" required></label>
     <label for="l-pass">Contraseña<input id="l-pass" type="password" autocomplete="current-password" required></label>
     <button id="l-btn" type="submit">Entrar</button>
     <p class="err" id="l-err" role="alert"></p>
+    <button class="link" type="button" id="l-forgot">¿No recuerdas la contraseña? Te enviamos un enlace</button>
+    <p class="ok" id="l-ok" hidden></p>
+    <p style="font-size:12px;color:var(--dim);margin:0">Es la contraseña de la app real (app.marinaprive.com), que puede ser distinta de la de la demo.</p>
   </form>
 </div>
 
@@ -139,7 +147,7 @@ body { background: var(--night); color: var(--ink); font-family: var(--f-body); 
 <div class="tip" id="tip" hidden></div>
 
 <header class="top">
-  <div class="brand"><b>MARINA PRIVÉ</b><span>LIVE</span></div>
+  <div class="brand"><img src="/assets/logo-marina-prive.png" alt="Marina Privé" height="30"><i class="sep"></i><span>LIVE</span></div>
   <div style="display:flex;gap:14px;align-items:center">
     <span class="status" id="status"><i></i><span id="clock">Dubái · --:--</span></span>
     <span class="toplinks"><button class="chip" type="button" id="fs">Pantalla completa</button><button class="chip" type="button" id="logout">Salir</button></span>
@@ -369,6 +377,15 @@ body { background: var(--night); color: var(--ink); font-family: var(--f-body); 
     const role = data.user && data.user.app_metadata && data.user.app_metadata.role;
     if (!["admin", "team"].includes(role)) { el("l-err").textContent = "Esta cuenta no tiene acceso al panel de Marina Privé."; await sb.auth.signOut(); return; }
     el("login").hidden = true; el("l-pass").value = ""; start();
+  });
+
+  el("l-forgot").addEventListener("click", async () => {
+    const email = el("l-email").value.trim();
+    el("l-err").textContent = ""; el("l-ok").hidden = true;
+    if (!email) { el("l-err").textContent = "Escribe primero tu email."; el("l-email").focus(); return; }
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: "https://app.marinaprive.com/set-password" });
+    if (error) { el("l-err").textContent = "No se ha podido enviar el enlace. Prueba de nuevo en un minuto."; return; }
+    el("l-ok").textContent = "Te hemos enviado un email para crear una contraseña nueva. Después vuelve aquí y entra con ella."; el("l-ok").hidden = false;
   });
 
   let timer = null;
