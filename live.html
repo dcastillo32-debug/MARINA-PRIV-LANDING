@@ -194,7 +194,6 @@ body { background: var(--night); color: var(--ink); font-family: var(--f-body); 
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.44.1/dist/globe.gl.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@amcharts/amcharts4-geodata@4.1.28/dist/script/worldLow.js"></script>
 <script>
 (function () {
   const SUPABASE_URL = "https://xcdtkztkkdhmkcrfjpil.supabase.co";
@@ -228,7 +227,9 @@ body { background: var(--night); color: var(--ink); font-family: var(--f-body); 
   let visits = [], range = 7, mode = "all", seen = new Set(), first = true, hovered = null;
 
   // ---------- Globe ----------
-  const land = ((window.am4geodata_worldLow && window.am4geodata_worldLow.features) || []).filter((f) => f.id !== "AQ");
+  // Country borders: Natural Earth 1:50m (public domain).
+  const GEO = "https://cdn.jsdelivr.net/gh/nvkelso/natural-earth-vector@v5.1.2/geojson/ne_50m_admin_0_countries.geojson";
+  const code = (d) => d && d.properties ? d.properties.ISO_A2_EH : null;
   const host = el("globe");
   let globe = null, idleTimer = null;
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -237,7 +238,6 @@ body { background: var(--night); color: var(--ink); font-family: var(--f-body); 
       .backgroundColor("rgba(0,0,0,0)")
       .showGraticules(true)
       .showAtmosphere(true).atmosphereColor("#4a8fd6").atmosphereAltitude(0.16)
-      .polygonsData(land)
       .polygonAltitude((d) => (d === hovered ? 0.018 : 0.006))
       .polygonCapColor((d) => capColor(d))
       .polygonSideColor(() => "rgba(222,192,82,0.06)")
@@ -259,13 +259,14 @@ body { background: var(--night); color: var(--ink); font-family: var(--f-body); 
     ctl.minDistance = 130; ctl.maxDistance = 600;
     ctl.addEventListener("start", () => { ctl.autoRotate = false; clearTimeout(idleTimer); });
     ctl.addEventListener("end", () => { clearTimeout(idleTimer); if (!reduce) idleTimer = setTimeout(() => (ctl.autoRotate = true), 8000); });
+    fetch(GEO).then((r) => r.json()).then((g) => { globe.polygonsData(g.features.filter((f) => f.properties.ISO_A2_EH !== "AQ")); }).catch(() => {});
     const size = () => { const narrow = innerWidth <= 900; globe.width(innerWidth).height(narrow ? innerHeight * 0.68 : innerHeight); };
     size(); addEventListener("resize", size);
   } catch (e) { host.innerHTML = '<p style="padding:140px 28px;color:#8ea0b8">El globo no se ha podido cargar en este navegador.</p>'; }
 
   let byCountry = {};
   function capColor(d) {
-    const n = byCountry[d.id] || 0;
+    const n = byCountry[code(d)] || 0;
     if (d === hovered) return "rgba(222,192,82,0.55)";
     if (!n) return "rgba(14,38,66,0.92)";
     const max = Math.max(1, ...Object.values(byCountry));
@@ -278,8 +279,8 @@ body { background: var(--night); color: var(--ink); font-family: var(--f-body); 
   function place() { tip.style.left = mouse.x + 14 + "px"; tip.style.top = mouse.y + 14 + "px"; }
   function showTip(d) {
     if (!d) { tip.hidden = true; return; }
-    const n = byCountry[d.id] || 0;
-    tip.innerHTML = `<b>${esc(cname(d.id, d.properties && d.properties.name))}</b><br><span style="color:#8ea0b8">${n ? n + " visita" + (n === 1 ? "" : "s") : "Sin visitas"}</span>`;
+    const n = byCountry[code(d)] || 0;
+    tip.innerHTML = `<b>${esc((d.properties && d.properties.NAME_ES) || cname(code(d)))}</b><br><span style="color:#8ea0b8">${n ? n + " visita" + (n === 1 ? "" : "s") : "Sin visitas"}</span>`;
     tip.hidden = false; place();
   }
 
