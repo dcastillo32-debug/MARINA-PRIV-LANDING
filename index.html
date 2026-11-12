@@ -10,8 +10,8 @@
 <meta name="theme-color" content="#05080f">
 <title>Marina Privé Partners</title>
 <meta name="description" content="Marina Privé — list your yacht and receive bookings from a private clientele. Founding partner places now open.">
-<link rel="icon" type="image/png" href="assets/favicon.png">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@300;400;500;600;800&family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500&display=swap">
@@ -442,7 +442,7 @@ window.pickLang = function () {
 </head>
 <body>
 <nav class="nav gutter" id="nav" aria-label="Main" data-ta="aria.main">
-  <a class="logo" href="#top" aria-label="Marina Privé"><img src="assets/logo-marina-prive.png" alt="Marina Privé" width="181" height="40"></a>
+  <a class="logo" href="#top" aria-label="Marina Privé"><img src="/assets/logo-marina-prive.png" alt="Marina Privé" width="181" height="40"></a>
   <div class="nav-r">
     <div class="lang" role="group" aria-label="Language" data-ta="aria.lang">
       <button type="button" id="lang-en" data-lang="en" aria-pressed="true">EN</button>
@@ -685,6 +685,7 @@ window.pickLang = function () {
     <form class="card-form" id="partner-form" name="partners" method="POST" data-netlify="true" netlify-honeypot="company_website" novalidate>
       <input type="hidden" name="form-name" value="partners">
       <input type="hidden" name="lang" id="f-lang" value="">
+      <input type="hidden" name="ref" id="f-ref" value="">
       <div class="hair"></div>
       <div class="form-in" id="form-in">
         <div class="fgrid">
@@ -718,14 +719,14 @@ window.pickLang = function () {
         <div class="ring" aria-hidden="true">✓</div>
         <p class="eyebrow" data-t="done.k">Application received</p>
         <h3 data-t="done.h">Thank you</h3>
-        <p data-t="done.p">We'll be in touch within a few working days, usually by WhatsApp.</p>
+        <p data-t="done.p">We'll be in touch by email within a few working days.</p>
         <span class="preview-flag" id="preview-flag" hidden data-t="done.preview">Preview mode: this application was not sent anywhere.</span>
       </div>
     </form>
   </div>
 <footer class="gutter apply-foot">
   <div class="inner foot">
-    <span class="logo"><img src="assets/logo-marina-prive.png" alt="Marina Privé" width="126" height="28"></span>
+    <span class="logo"><img src="/assets/logo-marina-prive.png" alt="Marina Privé" width="126" height="28"></span>
     <span class="mono" data-t="ww">Worldwide</span>
     <span class="tiny">© <span id="yr">2026</span> · <span data-t="foot">All rights reserved</span></span>
   </div>
@@ -799,7 +800,7 @@ const T = { en: {
   "f.msg": "Tu barco", "f.msgph": "p. ej. Sunseeker 62, con tripulación",
   "f.consent": "Acepto que Marina Privé guarde estos datos y me contacte sobre el programa de socios.",
   "submit": "Enviar mi solicitud",
-  "done.k": "Solicitud recibida", "done.h": "Gracias", "done.p": "Te contactaremos en pocos días laborables, normalmente por WhatsApp.",
+  "done.k": "Solicitud recibida", "done.h": "Gracias", "done.p": "Te escribiremos por email en pocos días laborables.",
   "done.preview": "Modo de vista previa: esta solicitud no se ha enviado a ningún sitio.",
   "foot": "Todos los derechos reservados",
   "err.req": "Completa tu nombre y tu WhatsApp. Si añades un email, revisa que esté completo.",
@@ -848,7 +849,7 @@ const T = { en: {
   "f.msg": "قاربك", "f.msgph": "مثال: Sunseeker 62 مع طاقم",
   "f.consent": "أوافق على أن تحتفظ Marina Privé بهذه البيانات وتتواصل معي بشأن برنامج الشركاء.",
   "submit": "أرسل طلبي",
-  "done.k": "تم استلام الطلب", "done.h": "شكرًا لك", "done.p": "سنتواصل معك خلال أيام عمل قليلة، عادةً عبر واتساب.",
+  "done.k": "تم استلام الطلب", "done.h": "شكرًا لك", "done.p": "سنتواصل معك عبر البريد الإلكتروني خلال أيام عمل قليلة.",
   "done.preview": "وضع المعاينة: لم يُرسَل هذا الطلب إلى أي جهة.",
   "foot": "جميع الحقوق محفوظة",
   "err.req": "أدخل اسمك ورقم واتساب. وإن أضفت بريدًا إلكترونيًا فتأكد من اكتماله.",
@@ -1209,6 +1210,7 @@ form.addEventListener("submit", async e => {
     const res = await fetch("/", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body });
     if (!res.ok) throw new Error(res.status);
     finish(false);
+    if (window.mpTrack) window.mpTrack("form");
   } catch (ex) { err.textContent = tr("err.send"); btn.disabled = false; $("submit-label").textContent = tr("submit"); }
 });
 function finish(preview) { $("form-in").hidden = true; $("preview-flag").hidden = !preview; $("done").hidden = false; }
@@ -1227,5 +1229,25 @@ $("yr").textContent = new Date().getFullYear();
 setLang(window.pickLang ? window.pickLang() : "en");
 </script>
 
+<script>
+/* Visits: one line per page view (and per application sent) in Marina Privé's own database,
+   with the country and city given by the server. Personal links (/p/company) say which company
+   came from our emails. No cookies; a random id in this browser counts returning visitors. */
+(function () {
+  try {
+    var m = location.pathname.match(/^\/p\/([a-z0-9-]{1,40})\/?$/i), ref = "";
+    try { ref = m ? m[1].toLowerCase() : (new URLSearchParams(location.search).get("ref") || sessionStorage.getItem("mp_ref") || ""); if (ref) sessionStorage.setItem("mp_ref", ref); } catch (e) { ref = m ? m[1].toLowerCase() : ""; }
+    var vid = "";
+    try { vid = localStorage.getItem("mp_vid") || ""; if (!vid) { vid = Math.random().toString(36).slice(2, 12) + Date.now().toString(36); localStorage.setItem("mp_vid", vid); } } catch (e) {}
+    window.mpTrack = function (ev) {
+      var d = JSON.stringify({ event: ev, path: location.pathname, ref: ref, referrer: document.referrer || "", lang: navigator.language || "", device: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? "mobile" : "desktop", visitor: vid });
+      try { if (navigator.sendBeacon && navigator.sendBeacon("/api/visit", new Blob([d], { type: "application/json" }))) return; } catch (e) {}
+      fetch("/api/visit", { method: "POST", body: d, keepalive: true, headers: { "Content-Type": "application/json" } }).catch(function () {});
+    };
+    var f = document.getElementById("f-ref"); if (f) f.value = ref;
+    window.mpTrack("view");
+  } catch (e) {}
+})();
+</script>
 </body>
 </html>
