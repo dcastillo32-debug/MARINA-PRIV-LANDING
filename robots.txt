@@ -1,2 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /live
+Disallow: /p/
+
+Sitemap: https://marinaprive.com/sitemap.xml
